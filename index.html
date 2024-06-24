@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot UI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            background: url('/img.webp') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(11.5px);
+            -webkit-backdrop-filter: blur(11.5px);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .voice-button.active {
+    background: red;
+}
+
+.voice-button.active i {
+    content: "\f04d" !important; /* Font Awesome icon for the stop symbol */
+}
+
+        .chat-container {
+            width: 95%;
+            max-width: 1400px;
+            display: flex;
+            height: 85vh;
+            border-radius: 20px;
+            overflow: hidden;
+            gap: 10px;
+        }
+        .sidebar {
+            width: 25%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .chat-area {
+            width: 75%;
+            padding: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 15px;
+        }
+        .chat-messages {
+            height: calc(100% - 100px);
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+        .chat-input {
+            position: absolute;
+            bottom: 20px;
+            width: calc(100% - 40px);
+            display: flex;
+            align-items: center;
+        }
+        .chat-input input {
+            flex-grow: 1;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 50px;
+            margin-right: 10px;
+            outline: none;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .chat-input button {
+            border: none;
+            background: #3B82F6;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .chat-input button:hover {
+            background: #2563EB;
+        }
+        .voice-button {
+            border: none;
+            background: #3B82F6;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+            margin-left: 10px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .voice-button:hover {
+            background: #2563EB;
+        }
+        .message {
+            animation: fadeIn 0.5s ease;
+        }
+        .icon-button {
+    border: none;
+    background: #3B82F6;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+    margin-left: 10px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+.icon-button:hover {
+    background: #2563EB;
+}
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .waveform-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            flex-direction: column;
+            text-align: center;
+        }
+        .waveform {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .wave {
+            width: 40px;
+            height: 100px;
+            background: white;
+            margin: 0 10px;
+            border-radius: 20px;
+        }
+        .stop-button {
+            border: none;
+            background: #FF0000;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+            margin-left: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .stop-button:hover {
+            background: #B20000;
+        }
+        .save-chat-button {
+            border: none;
+            background: #10B981;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            margin-bottom: 10px;
+        }
+        .save-chat-button:hover {
+            background: #059669;
+        }
+        .chat-history-tab {
+            padding: 10px 20px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.3);
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .chat-history-tab:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        .user-message {
+            justify-content: flex-start;
+        }
+        .bot-message {
+            justify-content: flex-end;
+        }
+        .message-content {
+            max-width: 60%;
+            border-radius: 20px;
+            transition: transform 0.3s ease-in-out, background-color 0.3s;
+            animation: slideIn 0.3s ease-out;
+            padding: 10px;
+            position: relative;
+            margin-bottom: 20px; /* Added space to accommodate the emoji */
+        }
+
+        .message-content:hover .emoji {
+            transform: scale(1.5); /* Expand emoji on hover */
+        }
+
+        .message-content:hover {
+            transform: scale(1.05);
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .waveform-text {
+            color: white;
+            font-size: 1.5rem;
+            text-align: center;
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .chat-container {
+                flex-direction: column;
+            }
+            .sidebar,
+            .chat-area {
+                width: 100%;
+                height: 50%;
+            }
+        }
+        .reaction {
+            position: relative;
+            display: inline-block;
+        }
+
+        .reaction .emoji {
+            position: absolute;
+            right: -10px;
+            bottom: -10px;
+            width: 24px;
+            height: 24px;
+         
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            animation: fadeInEmoji 0.3s ease;
+            z-index: 1; /* Ensure it is on top of the message */
+            transition: transform 0.3s ease; /* Add transition for hover effect */
+        }
+
+        @keyframes fadeInEmoji {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="sidebar glass p-4">
+            <h2 class="text-xl font-bold mb-4">Chat History</h2>
+            <div id="chat-history" class="overflow-y-auto">
+                <!-- Chat history will be dynamically loaded here -->
+            </div>
+        </div>
+        <div class="chat-area p-4">
+            <div class="chat-messages overflow-y-auto p-4" id="chatWindow">
+                <div id="welcomeMessage" class="welcome-message">Explore effortlessly with our AI-powered Trip Advisor. Start the chat now!</div>
+            </div>
+            <div class="chat-input flex items-center p-4 bg-white rounded shadow">
+                <input id="chatInput" type="text" class="flex-grow p-2 border rounded-full" placeholder="Type a message..."> 
+                <button id="sendButton" class="icon-button ml-2">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+                <button id="voiceConversationButton" class="icon-button ml-2">
+                    <i class="fas fa-headphones"></i>
+                </button>
+                <button id="voiceButton" class="icon-button ml-2">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button id="saveChatButton" class="icon-button ml-2">
+                    <i class="fa fa-save"></i>
+                </button>
+                
+            </div>
+            
+        </div>
+    </div>
+    <div class="waveform-overlay flex" id="waveformContainer">
+        <div id="userText" class="waveform-text">Listening...</div>
+        <div id="botText" class="waveform-text"></div>
+        <div class="waveform" id="waveform">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+        <button class="stop-button" id="stopButton">
+            <i class="fas fa-stop"></i>
+        </button>
+    </div>
+    <script src="https://unpkg.com/wavesurfer.js"></script>
+    <script>
+       document.addEventListener("DOMContentLoaded", () => {
+    const chatWindow = document.getElementById("chatWindow");
+    const chatInput = document.getElementById("chatInput");
+    const sendButton = document.getElementById("sendButton");
+    const voiceConversationButton = document.getElementById("voiceConversationButton");
+    const voiceButton = document.getElementById("voiceButton");
+    const stopButton = document.getElementById("stopButton");
+    const saveChatButton = document.getElementById("saveChatButton");
+    const chatHistory = document.getElementById("chat-history");
+    const welcomeMessage = document.getElementById("welcomeMessage");
+    const waveformContainer = document.getElementById("waveformContainer");
+    const userText = document.getElementById("userText");
+    const botText = document.getElementById("botText");
+    const waveform = document.getElementById("waveform");
+    const waves = document.querySelectorAll(".wave");
+
+    let chatLogs = [];
+    let recognition;
+    let wavesurfer;
+    let isVoiceMode = false;
+    let isUserSpeaking = false;
+    let audio = null;
+    let isVoiceModeStopped = false;
+
+    sendButton.addEventListener("click", () => sendMessage());
+    chatInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    });
+
+    voiceConversationButton.addEventListener("click", startVoiceConversation);
+    voiceButton.addEventListener("click", startVoiceInput);
+    stopButton.addEventListener("click", stopVoiceConversation);
+    saveChatButton.addEventListener("click", saveChatHistory);
+
+    chatInput.addEventListener("input", () => {
+        if (chatInput.value.trim()) {
+            welcomeMessage.style.display = "none";
+        }
+    });
+
+    async function sendMessage(message = null) {
+        if (!message) {
+            message = chatInput.value.trim();
+        }
+        if (message) {
+            const userMessageElement = appendMessage("user", message, "neutral"); // Initially append with neutral emotion
+            chatInput.value = "";
+            welcomeMessage.remove();
+
+            try {
+                const response = await fetch('/api/recommendations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ user_id: 'user123', message })
+                });
+
+                if (response.ok) {
+                    const botResponse = await response.json();
+                    botResponse.forEach(resp => {
+                        appendBotMessage(resp.response, resp.emotion);
+                        if (isVoiceMode) {
+                            speakResponse(resp.response);
+                        }
+                        // Update user's message with the correct emotion
+                        updateUserMessageEmotion(userMessageElement, resp.emotion);
+                    });
+                } else {
+                    appendMessage("bot", "Sorry, something went wrong. Please try again.");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                appendMessage("bot", "Sorry, something went wrong. Please try again.");
+            }
+        }
+    }
+
+    function appendMessage(sender, message, emotion) {
+        const messageElement = document.createElement("div");
+        messageElement.className = `flex items-center my-2 ${sender === "bot" ? "bot-message" : "user-message"}`;
+
+        const emojiElement = document.createElement("div");
+        emojiElement.className = `reaction`;
+
+        const textElement = document.createElement("div");
+        textElement.className = `message-content ${sender === "bot" ? "bg-gray-100 text-gray-800" : "bg-blue-500 text-white"}`;
+        textElement.textContent = message;
+
+        const profileEmoji = document.createElement("div");
+        profileEmoji.className = `w-10 h-10 rounded-full mx-2 flex items-center justify-center text-3xl ${sender === "bot" ? "order-last" : "order-first"}`;
+        profileEmoji.textContent = sender === "bot" ? getBotEmoji(emotion) : "👤";
+
+        messageElement.appendChild(profileEmoji);
+        messageElement.appendChild(textElement);
+        messageElement.appendChild(emojiElement);
+
+        chatWindow.appendChild(messageElement);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+
+        chatLogs.push({ sender, message, emotion });
+
+        if (sender === "user") {
+            // Store reference to emojiElement for later update
+            emojiElement.dataset.messageId = chatLogs.length - 1;
+        } else {
+            // Immediately set bot's emoji
+            setEmoji(emojiElement, emotion);
+        }
+
+        return emojiElement;
+    }
+
+    function setEmoji(emojiElement, emotion) {
+        const emojiDiv = document.createElement("div");
+        emojiDiv.className = "emoji";
+        emojiDiv.textContent = getEmoji(emotion);
+        emojiElement.appendChild(emojiDiv);
+    }
+
+    function updateUserMessageEmotion(emojiElement, emotion) {
+        // Update the emoji for the user's message
+        setEmoji(emojiElement, emotion);
+    }
+
+    function appendBotMessage(message, emotion) {
+        const messageElement = document.createElement("div");
+        messageElement.className = `flex items-center my-2 bot-message`;
+
+        const emojiElement = document.createElement("div");
+        emojiElement.className = `reaction`;
+
+        const textElement = document.createElement("div");
+        textElement.className = `message-content bg-gray-100 text-gray-800`;
+
+        if (typeof message !== 'string') {
+            message = String(message);
+        }
+
+        const parts = message.split(':');
+        if (parts.length > 1) {
+            // The part before the colon
+            const beforeColon = document.createElement("p");
+            beforeColon.textContent = parts[0] + ':';
+            textElement.appendChild(beforeColon);
+
+            // The part after the colon, potentially containing commas
+            const afterColon = parts[1].split(',').map(point => point.trim());
+            const listElement = document.createElement("ul");
+            listElement.className = "list-disc list-inside";
+            afterColon.forEach(point => {
+                const listItem = document.createElement("li");
+                listItem.textContent = point;
+                listElement.appendChild(listItem);
+            });
+            textElement.appendChild(listElement);
+        } else {
+            // If there's no colon, display the message as a regular paragraph
+            const sentenceElement = document.createElement("p");
+            sentenceElement.textContent = message.trim();
+            textElement.appendChild(sentenceElement);
+        }
+
+        const profileEmoji = document.createElement("div");
+        profileEmoji.className = `w-10 h-10 rounded-full mx-2 flex items-center justify-center text-3xl order-last`;
+        profileEmoji.textContent = getBotEmoji(emotion);
+
+        messageElement.appendChild(profileEmoji);
+        messageElement.appendChild(textElement);
+
+        chatWindow.appendChild(messageElement);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+
+        chatLogs.push({ sender: "bot", message, emotion });
+
+        // Set the bot's emoji immediately
+        setEmoji(emojiElement, emotion);
+    }
+
+    function getEmoji(emotion) {
+        const emojiMap = {
+            "joy": "😄",
+            "sadness": "😢",
+            "fear": "😨",
+            "anger": "😡",
+            "surprise": "😲",
+            "neutral": "😶",
+            "disgust": "🤢",
+            "shame": "😳"
+        };
+        return emojiMap[emotion] || "😶";
+    }
+
+    function getBotEmoji(emotion) {
+        const botEmojiMap = {
+            "joy": "😄",
+            "sadness": "😢",
+            "fear": "😟",
+            "anger": "😟",
+            "surprise": "😲",
+            "neutral": "😶",
+            "disgust": "😟",
+            "shame": "😟"
+        };
+        return botEmojiMap[emotion] || "😶";
+    }
+
+    // Modify the speakResponse function
+async function speakResponse(text) {
+    if (isVoiceModeStopped) return; // Check the flag
+
+    const words = text.split(' ');
+    let currentIndex = 0;
+
+    try {
+        const response = await fetch('/api/speech', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ text })
+        });
+
+        if (response.ok) {
+            const audioData = await response.json();
+            if (audio) {
+                audio.pause();
+            }
+            audio = new Audio(audioData.url);
+
+            // Wait for the audio to be fully loaded before playing
+            audio.addEventListener('canplaythrough', () => {
+                if (!isVoiceModeStopped) { // Check the flag again before playing
+                    audio.play();
+                }
+            });
+
+            audio.addEventListener('timeupdate', () => {
+                if (currentIndex < words.length && !isVoiceModeStopped) { // Check the flag
+                    const nextWords = words.slice(currentIndex, currentIndex + 5).join(' ');
+                    botText.innerHTML = nextWords.replace(words[currentIndex], `<span style="color: yellow;">${words[currentIndex]}</span>`);
+                    currentIndex++;
+                }
+            });
+
+            audio.addEventListener('ended', () => {
+                botText.innerHTML = '';
+                if (isVoiceMode && !isVoiceModeStopped) { // Check the flag
+                    recognition.start();
+                    wavesurfer.microphone.start();
+                }
+            });
+
+            recognition.stop();
+            wavesurfer.microphone.stop();
+
+        } else {
+            console.error('Error fetching speech response');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+    function startWaveform() {
+        wavesurfer = WaveSurfer.create({
+            container: '#waveform',
+            waveColor: '#A8DBA8',
+            progressColor: '#3B8686',
+            cursorColor: '#FFF',
+            barWidth: 3,
+            barHeight: 1,
+            height: 100,
+            responsive: true
+        });
+    }
+
+    // Modify the startVoiceConversation function to reset the flag
+function startVoiceConversation() {
+    isVoiceMode = true;
+    isVoiceModeStopped = false; // Reset the flag
+    startWaveform();
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        userText.textContent = transcript;
+        chatInput.value = transcript;
+        if (event.results[0].isFinal) {
+            isUserSpeaking = false;
+            recognition.stop(); // Stop recognition to prevent looping
+            if (transcript.includes("stop")) {
+                stopVoiceConversation();
+            } else {
+                sendMessage(transcript);
+            }
+        }
+    };
+
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+    };
+
+    recognition.onend = () => {
+        if (isVoiceMode && isUserSpeaking) {
+            recognition.start();
+        }
+    };
+
+    recognition.onspeechstart = () => {
+        isUserSpeaking = true;
+    };
+
+    recognition.onspeechend = () => {
+        isUserSpeaking = false;
+    };
+
+    recognition.start();
+    waveformContainer.style.display = 'flex';
+    wavesurfer.microphone.start();
+}
+
+
+function startVoiceInput() {
+    if (voiceButton.classList.contains('active')) {
+        stopVoiceConversation();
+        return;
+    }
+
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        chatInput.value = transcript;
+        if (event.results[0].isFinal) {
+            recognition.stop(); // Stop recognition to prevent looping
+            sendMessage(transcript);
+            voiceButton.classList.remove('active'); // Reset the button appearance
+            voiceButton.querySelector('i').classList.replace('fa-stop', 'fa-microphone'); // Change icon back
+        }
+    };
+
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        voiceButton.classList.remove('active'); // Reset the button appearance
+        voiceButton.querySelector('i').classList.replace('fa-stop', 'fa-microphone'); // Change icon back
+    };
+
+    recognition.onend = () => {
+        voiceButton.classList.remove('active'); // Reset the button appearance
+        voiceButton.querySelector('i').classList.replace('fa-stop', 'fa-microphone'); // Change icon back
+    };
+
+    recognition.start();
+    voiceButton.classList.add('active'); // Change the button appearance to indicate recording
+    voiceButton.querySelector('i').classList.replace('fa-microphone', 'fa-stop'); // Change icon to stop
+}
+
+function stopVoiceConversation() {
+    isVoiceMode = false;
+    isUserSpeaking = false;
+    isVoiceModeStopped = true; // Set the flag
+
+    if (recognition) {
+        try {
+            recognition.stop();
+        } catch (e) {
+            console.error('Error stopping recognition:', e);
+        }
+    }
+
+    if (audio) {
+        audio.pause();
+    }
+
+    waveformContainer.style.display = 'none';
+
+    if (wavesurfer && wavesurfer.microphone) {
+        wavesurfer.microphone.stopDevice();
+        wavesurfer.destroy();
+    }
+
+    voiceButton.classList.remove('active'); // Reset the button appearance
+    voiceButton.querySelector('i').classList.replace('fa-stop', 'fa-microphone'); // Change icon back
+}
+
+
+
+    function startWaveformAnimation() {
+        let isAnimating = true;
+
+        function animate() {
+            if (!isAnimating) return;
+
+            waves.forEach((wave, index) => {
+                const height = Math.random() * 100;
+                wave.style.height = `${height}px`;
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        return () => {
+            isAnimating = false;
+        };
+    }
+
+    function stopWaveformAnimation() {
+        isAnimating = false;
+    }
+
+    function saveChatHistory() {
+        const chatTitle = `Chat ${chatLogs.length + 1}`;
+        const chat = {
+            title: chatTitle,
+            messages: [...chatLogs]
+        };
+        chatLogs = [];
+
+        const historyTab = document.createElement('div');
+        historyTab.classList.add('chat-history-tab', 'glass');
+        historyTab.innerHTML = chatTitle;
+        historyTab.addEventListener('click', () => {
+            loadChatHistory(chat);
+        });
+        chatHistory.appendChild(historyTab);
+
+        chatWindow.innerHTML = '';
+        const welcomeMessageDiv = document.createElement("div");
+        welcomeMessageDiv.id = "welcomeMessage";
+        welcomeMessageDiv.className = "welcome-message";
+        welcomeMessageDiv.textContent = "Explore effortlessly with our AI-powered Trip Advisor. Start the chat now!";
+        chatWindow.appendChild(welcomeMessageDiv);
+    }
+
+    function loadChatHistory(chat) {
+        chatWindow.innerHTML = '';
+        chat.messages.forEach(msg => {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('flex', msg.sender === "bot" ? 'items-center' : 'justify-end', 'mb-4', 'message');
+            messageDiv.innerHTML = `<div class="${msg.sender === "bot" ? 'bg-gray-100' : 'bg-blue-500 text-white'} p-4 rounded shadow">${msg.message}</div>`;
+            chatWindow.appendChild(messageDiv);
+        });
+    }
+});
+    </script>
+</body>
+</html>
